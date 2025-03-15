@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Tracker</title>
+    <style>
+        /* General styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 2.5em;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 90%;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .low-stock {
+            color: red;
+            font-weight: bold;
+        }
+        input {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #2575fc;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #6a11cb;
+            transform: scale(1.1);
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group input {
+            width: 200px;
+            margin-right: 10px;
+        }
+        /* Responsive design */
+        @media (max-width: 768px) {
+            h2 {
+                font-size: 2em;
+            }
+            table {
+                width: 100%;
+            }
+            th, td {
+                padding: 10px;
+            }
+            input {
+                width: 50px;
+            }
+            .btn {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Stock Tracker</h2>
+
+        <!-- Add new product form -->
+        <div class="input-group">
+            <input type="text" id="newProductName" placeholder="Product Name">
+            <input type="number" id="newProductStock" placeholder="Initial Stock" min="1">
+            <button class="btn" onclick="addProduct()">Add New Product</button>
+        </div>
+
+        <!-- Stock Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Stock</th>
+                    <th>Used Today</th>
+                    <th>Need to Buy</th>
+                </tr>
+            </thead>
+            <tbody id="stockTable">
+                <script>
+                    const products = [
+                        "นมข้น", "นมสด", "นมแกลอน", "นมไมโล", "นมดีมอลต์", "นมโฟร์โมสต์ช็อกโกแลต", 
+                        "นมโฟร์โมสต์หวาน", "นมโฟร์โมสต์จืด", "นมดัชมิลล์ เขียว", "นมดัชมิลล์ ม่วง", 
+                        "นมดีน่างาดำ", "แลคตาซอย", "ไวตามิลค์", "กาแฟสด", "เนสกาแฟ", "เบอร์ดี้กระป๋อง", 
+                        "เนสกาแฟกระป๋องเขียว", "กาแฟซอง", "ชาไทย", "ชาเขียว", "ชาอัมพวา", "แป๊บซี่ 17", 
+                        "ซีวิต ขวดส้ม", "ซีวิต ขวดเหลือง", "สปอนเซอร์", "เอ็ม 150", "คาราบาว", "เรดดี้แดง", 
+                        "แมนซั่ม", "น้ำแดงเฮลบลูบอย", "น้ำส้ม", "ยูนีฟ", "โกโก้", "โอวัลติน", "ขนมกล่อง", 
+                        "ขนมซอง 5 บาท", "ขนมห่อใหญ่", "หมากฝรั่ง", "หลอดกาแฟ", "หลอดน้ำ", "หลอดเล็ก", 
+                        "แก้ว 22 ออนซ์", "ฝา 22 ออนซ์", "แก้ว 16 ออนซ์", "น้ำตาล", "สิงห์ เลมอน", 
+                        "อิชิตัน เหลือง", "อิชิตัน เขียว", "อิชิตัน ม่วง", "อิชิตัน ส้ม", "มาม่าซอง", 
+                        "มาม่ากระป๋อง"
+                    ];
+                    
+                    let tableBody = document.getElementById("stockTable");
+
+                    // Add a new product
+                    function addProduct() {
+                        let productName = document.getElementById('newProductName').value;
+                        let productStock = document.getElementById('newProductStock').value;
+
+                        if (!productName || !productStock || productStock <= 0) {
+                            alert("Please enter a valid product name and stock.");
+                            return;
+                        }
+
+                        let row = `<tr>
+                            <td>${productName}</td>
+                            <td>
+                                <input type="number" class="stock" value="${productStock}" data-stock="${productStock}">
+                            </td>
+                            <td class="used-today">0</td>
+                            <td class="need-to-buy">-</td>
+                        </tr>`;
+                        tableBody.innerHTML += row;
+                    }
+
+                    // Update all stock data
+                    function updateStock() {
+                        let rows = tableBody.querySelectorAll('tr');
+                        rows.forEach(row => {
+                            let stockInput = row.querySelector('.stock');
+                            let usedTodayCell = row.querySelector('.used-today');
+                            let needToBuyCell = row.querySelector('.need-to-buy');
+
+                            let previousStock = parseInt(stockInput.getAttribute('data-stock')) || 0;
+                            let newStock = Math.max(0, parseInt(stockInput.value) || 0);
+                            
+                            let usedToday = Math.max(0, previousStock - newStock);
+                            usedTodayCell.textContent = usedToday;
+                            
+                            stockInput.setAttribute('data-stock', newStock);
+                            
+                            // Check stock level and calculate Need to Buy
+                            if (newStock <= 3) {
+                                stockInput.classList.add('low-stock');
+                                needToBuyCell.textContent = 10 - newStock; // Assume restocking to 10
+                            } else {
+                                stockInput.classList.remove('low-stock');
+                                needToBuyCell.textContent = "-";
+                            }
+                        });
+                    }
+
+                    // Load initial products
+                    products.forEach(product => {
+                        let initialStock = Math.floor(Math.random() * 10) + 1;
+                        let row = `<tr>
+                            <td>${product}</td>
+                            <td>
+                                <input type="number" class="stock" value="${initialStock}" data-stock="${initialStock}">
+                            </td>
+                            <td class="used-today">0</td>
+                            <td class="need-to-buy">-</td>
+                        </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+                </script>
+            </tbody>
+        </table>
+
+        <!-- Update button -->
+        <button class="btn" onclick="updateStock()">Update All</button>
+    </div>
+</body>
+</html>
